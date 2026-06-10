@@ -1,3 +1,4 @@
+import { Droppable } from "@hello-pangea/dnd";
 import { useState } from "react";
 
 import { TicketCard } from "@/components/ticket-card";
@@ -23,11 +24,28 @@ export function Column({ id, title, hazard = false, faded = false }: ColumnDef) 
           <span className="sr-only"> cards</span>
         </span>
       </div>
-      <ul className="scrollbar-steel flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto p-3">
-        {tickets.map((ticket) => (
-          <TicketCard key={ticket.id} ticket={ticket} columnId={id} faded={faded} />
-        ))}
-      </ul>
+      {/* space-y (margins), not gap: the dnd engine measures margin boxes when
+          displacing siblings, but flex gap is invisible to it. */}
+      <Droppable droppableId={id}>
+        {(provided, snapshot) => (
+          <ul
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            className={`scrollbar-steel flex min-h-0 flex-1 flex-col space-y-2.5 overflow-y-auto p-3 transition-colors motion-reduce:transition-none ${snapshot.isDraggingOver ? "bg-wall/40" : ""}`}
+          >
+            {tickets.map((ticket, index) => (
+              <TicketCard
+                key={ticket.id}
+                ticket={ticket}
+                columnId={id}
+                index={index}
+                faded={faded}
+              />
+            ))}
+            {provided.placeholder}
+          </ul>
+        )}
+      </Droppable>
       <div className="shrink-0 p-3 pt-0">
         {draft === null ? (
           <button

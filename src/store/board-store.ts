@@ -49,12 +49,18 @@ const seedSerial =
 
 const toSerial = (n: number) => `KB-${String(n).padStart(4, "0")}`;
 
+export type TicketLocation = {
+  columnId: ColumnId;
+  index: number;
+};
+
 type BoardState = {
   columns: ColumnDef[];
   ticketsByColumn: Record<ColumnId, Ticket[]>;
   nextSerial: number;
   addTicket: (columnId: ColumnId, title: string) => void;
   removeTicket: (columnId: ColumnId, ticketId: string) => void;
+  moveTicket: (from: TicketLocation, to: TicketLocation) => void;
 };
 
 export const useBoardStore = create<BoardState>()((set) => ({
@@ -81,4 +87,25 @@ export const useBoardStore = create<BoardState>()((set) => ({
         ),
       },
     })),
+  moveTicket: (from, to) =>
+    set((s) => {
+      const fromTickets = [...s.ticketsByColumn[from.columnId]];
+      const [moved] = fromTickets.splice(from.index, 1);
+      if (!moved) return s; // stale index — ignore
+      if (from.columnId === to.columnId) {
+        fromTickets.splice(to.index, 0, moved);
+        return {
+          ticketsByColumn: { ...s.ticketsByColumn, [from.columnId]: fromTickets },
+        };
+      }
+      const toTickets = [...s.ticketsByColumn[to.columnId]];
+      toTickets.splice(to.index, 0, moved);
+      return {
+        ticketsByColumn: {
+          ...s.ticketsByColumn,
+          [from.columnId]: fromTickets,
+          [to.columnId]: toTickets,
+        },
+      };
+    }),
 }));
