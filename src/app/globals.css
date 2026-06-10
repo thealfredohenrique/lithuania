@@ -1,26 +1,50 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-wall: #20262e;
+  --color-steel: #2c343f;
+  --color-edge: #3a4450;
+  --color-paper: #efeae0;
+  --color-paper-edge: #d9d2c2;
+  --color-ink: #2a2620;
+  --color-ink-muted: #7a7263;
+  --color-muted: #c9cfd6;
+  --color-bright: #edf0f3;
+  --color-amber: #ffb224;
+  --color-signal: #e5484d;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-archivo);
+  --font-mono: var(--font-plex-mono);
+  --font-display: var(--font-saira);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Pegboard wall: soft vignette + 24px dot grid over gunmetal */
+@utility bg-pegboard {
+  background-color: var(--color-wall);
+  background-image:
+    radial-gradient(ellipse 100% 100% at 50% 0%, rgb(0 0 0 / 0) 55%, rgb(0 0 0 / 0.3) 100%),
+    radial-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1.5px);
+  background-size: 100% 100%, 24px 24px;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Amber hazard tape (Doing lane sign) */
+@utility bg-hazard {
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--color-amber) 0, var(--color-amber) 6px,
+    var(--color-wall) 6px, var(--color-wall) 12px
+  );
+}
+
+/* Job-ticket clipped top-right corner */
+@utility ticket-notch {
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+}
+
+/* Thin steel scrollbars */
+@utility scrollbar-steel {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-edge) transparent;
 }
