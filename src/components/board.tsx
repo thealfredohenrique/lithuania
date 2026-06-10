@@ -1,6 +1,7 @@
 "use client";
 
 import { DragDropContext, type DropResult } from "@hello-pangea/dnd";
+import { useEffect } from "react";
 
 import { Column } from "@/components/column";
 import { useBoardStore, type ColumnId } from "@/store/board-store";
@@ -8,6 +9,14 @@ import { useBoardStore, type ColumnId } from "@/store/board-store";
 export function Board() {
   const columns = useBoardStore((s) => s.columns);
   const moveTicket = useBoardStore((s) => s.moveTicket);
+
+  // Load persisted state after mount: SSR HTML and the hydration render both
+  // show the initial state (skipHydration), so they always match; saved data
+  // swaps in right after. `?.` covers storage-denied browsers, where the
+  // persist API is never attached to the store.
+  useEffect(() => {
+    useBoardStore.persist?.rehydrate();
+  }, []);
 
   const onDragEnd = ({ source, destination }: DropResult) => {
     if (!destination) return; // dropped outside any lane
