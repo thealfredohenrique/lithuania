@@ -1,13 +1,13 @@
-import { TicketCard, type Ticket } from "@/components/ticket-card";
+import { useState } from "react";
 
-export type ColumnProps = {
-  title: string;
-  tickets: Ticket[];
-  hazard?: boolean; // amber hazard tape on lane sign (Doing)
-  faded?: boolean; // faded tickets (Done)
-};
+import { TicketCard } from "@/components/ticket-card";
+import { useBoardStore, type ColumnDef } from "@/store/board-store";
 
-export function Column({ title, tickets, hazard = false, faded = false }: ColumnProps) {
+export function Column({ id, title, hazard = false, faded = false }: ColumnDef) {
+  const tickets = useBoardStore((s) => s.ticketsByColumn[id]);
+  const addTicket = useBoardStore((s) => s.addTicket);
+  const [draft, setDraft] = useState<string | null>(null); // null = button mode
+
   return (
     <section
       aria-label={title}
@@ -25,17 +25,41 @@ export function Column({ title, tickets, hazard = false, faded = false }: Column
       </div>
       <ul className="scrollbar-steel flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto p-3">
         {tickets.map((ticket) => (
-          <TicketCard key={ticket.id} ticket={ticket} faded={faded} />
+          <TicketCard key={ticket.id} ticket={ticket} columnId={id} faded={faded} />
         ))}
       </ul>
       <div className="shrink-0 p-3 pt-0">
-        <button
-          type="button"
-          aria-label={`Add card to ${title}`}
-          className="w-full border border-dashed border-edge px-3 py-2 font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:border-amber hover:text-amber focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber motion-reduce:transition-none"
-        >
-          + Add card
-        </button>
+        {draft === null ? (
+          <button
+            type="button"
+            aria-label={`Add card to ${title}`}
+            onClick={() => setDraft("")}
+            className="w-full border border-dashed border-edge px-3 py-2 font-mono text-xs uppercase tracking-wider text-muted transition-colors hover:border-amber hover:text-amber focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber motion-reduce:transition-none"
+          >
+            + Add card
+          </button>
+        ) : (
+          <input
+            autoFocus
+            value={draft}
+            placeholder="Card title"
+            aria-label={`New card title for ${title}`}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                const value = draft.trim();
+                if (value) {
+                  addTicket(id, value);
+                  setDraft(null);
+                }
+              } else if (e.key === "Escape") {
+                setDraft(null);
+              }
+            }}
+            onBlur={() => setDraft(null)}
+            className="w-full border border-amber bg-paper px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:outline-none"
+          />
+        )}
       </div>
     </section>
   );
