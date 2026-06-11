@@ -1,50 +1,65 @@
 @import "tailwindcss";
 
 @theme {
-  --color-wall: #20262e;
-  --color-steel: #2c343f;
-  --color-edge: #3a4450;
-  --color-paper: #efeae0;
-  --color-paper-edge: #d9d2c2;
-  --color-ink: #2a2620;
-  --color-ink-muted: #7a7263;
-  --color-muted: #c9cfd6;
-  --color-bright: #edf0f3;
-  --color-amber: #ffb224;
-  --color-signal: #e5484d;
+  /* System stacks from the design handoff (SF on macOS, Segoe/Cascadia on Windows) */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+    Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, Menlo, monospace;
+
+  /* Surfaces */
+  --color-canvas: #f7f8fa;
+  --color-surface: #ffffff;
+  --color-lane: #f0f1f4;
+  --color-fill: #f1f2f5;
+  --color-chip: #e3e5ea;
+
+  /* Text */
+  --color-ink: #1b1f27;
+  --color-ink-secondary: #4b5160;
+  --color-ink-muted: #686e7b;
+  --color-ink-faint: #9aa0ab;
+  --color-ink-serial: #8c919c;
+  --color-ink-done: #555b68;
+
+  /* Borders */
+  --color-line: #e9eaee;
+  --color-line-strong: #e2e4e9;
+  --color-line-hover: #d6d9e0;
+  --color-line-done: #ecedf0;
+
+  /* Brand / status */
+  --color-accent: #3d63dd;
+  --color-accent-deep: #3357c9;
+  --color-accent-soft: #e8edfb;
+  --color-accent-line: #d5def6;
+  --color-dot-todo: #b9bec7;
+  --color-success: #30a46c;
+  --color-rush: #ce2c31;
+  --color-rush-soft: #fef0f0;
+  --color-rush-line: #f9d8d8;
+  --color-rush-dot: #e5484d;
+  --color-wip: #9e6a06;
+  --color-wip-soft: #fcf1dc;
+  --color-wip-line: #f3e0bb;
+
+  /* Radii */
+  --radius-card: 10px;
+  --radius-lane: 14px;
+
+  /* Shadows */
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.05);
+  --shadow-card-done: 0 1px 2px rgb(16 24 40 / 0.04);
+  --shadow-card-hover: 0 3px 8px rgb(16 24 40 / 0.08);
+  --shadow-button: 0 1px 2px rgb(20 30 80 / 0.18);
+  --drop-shadow-drag: 0 12px 24px rgb(16 24 40 / 0.18);
 }
 
-@theme inline {
-  --font-sans: var(--font-archivo);
-  --font-mono: var(--font-plex-mono);
-  --font-display: var(--font-saira);
+::selection {
+  background: rgb(61 99 221 / 0.15);
 }
 
-/* Pegboard wall: soft vignette + 24px dot grid over gunmetal */
-@utility bg-pegboard {
-  background-color: var(--color-wall);
-  background-image:
-    radial-gradient(ellipse 100% 100% at 50% 0%, rgb(0 0 0 / 0) 55%, rgb(0 0 0 / 0.3) 100%),
-    radial-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1.5px);
-  background-size: 100% 100%, 24px 24px;
-}
-
-/* Amber hazard tape (Doing lane sign) */
-@utility bg-hazard {
-  background-image: repeating-linear-gradient(
-    135deg,
-    var(--color-amber) 0, var(--color-amber) 6px,
-    var(--color-wall) 6px, var(--color-wall) 12px
-  );
-}
-
-/* Job-ticket clipped top-right corner */
-@utility ticket-notch {
-  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
-}
-
-/* Thin steel scrollbars */
-@utility scrollbar-steel {
+/* Thin light scrollbars for lane/board overflow */
+@utility scrollbar-subtle {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-edge) transparent;
+  scrollbar-color: #c9cdd6 transparent;
 }
