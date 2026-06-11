@@ -1,49 +1,43 @@
 import { Droppable } from "@hello-pangea/dnd";
 import { useState } from "react";
 
-import { KebabIcon, PlusIcon } from "@/components/icons";
+import { ConfirmDeleteDialog } from "@/components/confirm-delete-dialog";
+import { PlusIcon } from "@/components/icons";
 import { TicketCard } from "@/components/ticket-card";
-import { useBoardStore, type ColumnDef, type ColumnId } from "@/store/board-store";
+import { useBoardStore, type ColumnDef, type Ticket } from "@/store/board-store";
 
-// Status dots are presentation, not lane config — and Tailwind needs the
-// literal class names at build time.
-const DOT_CLASS: Record<ColumnId, string> = {
-  todo: "bg-dot-todo",
-  doing: "bg-accent",
-  done: "bg-success",
-};
+// Stable fallback for the selector: an inline `?? []` would be a fresh
+// reference on every store change and force spurious re-renders.
+const NO_TICKETS: Ticket[] = [];
 
-export function Column({ id, title, wipLimit, faded = false }: ColumnDef) {
-  const tickets = useBoardStore((s) => s.ticketsByColumn[id]);
+export function Column({ id, title }: ColumnDef) {
+  const tickets = useBoardStore((s) => s.ticketsByColumn[id] ?? NO_TICKETS);
   const addTicket = useBoardStore((s) => s.addTicket);
+  const removeColumn = useBoardStore((s) => s.removeColumn);
   const [draft, setDraft] = useState<string | null>(null); // null = button mode
+  const [confirming, setConfirming] = useState(false);
 
   return (
     <section
       aria-label={title}
       className="flex max-h-full w-81 shrink-0 flex-col rounded-lane bg-lane"
     >
-      <div className="flex shrink-0 items-center gap-2 px-4 pt-3.5 pb-2.5">
-        <span aria-hidden="true" className={`size-2 rounded-full ${DOT_CLASS[id]}`} />
+      <div className="group flex shrink-0 items-center gap-2 px-4 pt-3.5 pb-2.5">
+        <span aria-hidden="true" className="size-2 rounded-full bg-dot-todo" />
         <h2 className="text-[13.5px] font-semibold tracking-[-0.005em]">{title}</h2>
         <span className="rounded-md bg-chip px-[7px] py-px text-xs font-semibold text-ink-muted">
           {tickets.length}
           <span className="sr-only"> tasks</span>
         </span>
-        {wipLimit != null ? (
-          <span
-            title="This lane has a WIP limit"
-            className="inline-flex items-center rounded-md border border-wip-line bg-wip-soft px-[7px] py-px text-[11px] font-semibold text-wip"
-          >
-            WIP {wipLimit}
-          </span>
-        ) : null}
         <button
           type="button"
-          aria-label={`${title} column menu`}
-          className="ml-auto flex size-6.5 items-center justify-center rounded-[7px] transition-colors hover:bg-chip focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent motion-reduce:transition-none"
+          aria-label={`Delete ${title} column`}
+          onClick={() =>
+            tickets.length === 0 ? removeColumn(id) : setConfirming(true)
+          }
+          className="ml-auto flex size-6.5 items-center justify-center rounded-[7px] text-sm leading-none text-ink-faint opacity-0 transition-[opacity,background-color,color] hover:bg-chip hover:text-rush focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent group-hover:opacity-100 motion-reduce:transition-none"
         >
-          <KebabIcon />
+          ×
         </button>
       </div>
       {/* space-y (margins), not gap: the dnd engine measures margin boxes when
@@ -62,7 +56,6 @@ export function Column({ id, title, wipLimit, faded = false }: ColumnDef) {
                 ticket={ticket}
                 columnId={id}
                 index={index}
-                faded={faded}
               />
             ))}
             {provided.placeholder}
@@ -103,6 +96,14 @@ export function Column({ id, title, wipLimit, faded = false }: ColumnDef) {
           />
         )}
       </div>
+      {confirming ? (
+        <ConfirmDeleteDialog
+          columnTitle={title}
+          ticketCount={tickets.length}
+          onCancel={() => setConfirming(false)}
+          onConfirm={() => removeColumn(id)}
+        />
+      ) : null}
     </section>
   );
 }

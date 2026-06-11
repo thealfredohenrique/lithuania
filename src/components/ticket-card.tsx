@@ -1,18 +1,15 @@
 import { Draggable } from "@hello-pangea/dnd";
 
-import { CheckCircleIcon } from "@/components/icons";
-import { useBoardStore, type ColumnId, type Ticket } from "@/store/board-store";
+import { useBoardStore, type Ticket } from "@/store/board-store";
 
 export function TicketCard({
   ticket,
   columnId,
   index,
-  faded = false,
 }: {
   ticket: Ticket;
-  columnId: ColumnId;
+  columnId: string;
   index: number;
-  faded?: boolean;
 }) {
   const removeTicket = useBoardStore((s) => s.removeTicket);
 
@@ -30,18 +27,11 @@ export function TicketCard({
               article to avoid being clobbered; the drop-shadow stays on the
               li with it. */}
           <article
-            className={`group flex cursor-grab flex-col gap-[7px] rounded-card border bg-surface px-3.5 py-3 transition-[border-color,box-shadow,opacity] motion-reduce:transition-none ${
-              faded
-                ? "border-line-done opacity-[0.72] shadow-card-done hover:border-line-hover hover:opacity-100"
-                : "border-line shadow-card hover:border-line-hover hover:shadow-card-hover"
-            } ${snapshot.isDragging ? "rotate-1 cursor-grabbing border-line-hover opacity-100" : ""}`}
+            className={`group flex cursor-grab flex-col gap-[7px] rounded-card border border-line bg-surface px-3.5 py-3 shadow-card transition-[border-color,box-shadow] hover:border-line-hover hover:shadow-card-hover motion-reduce:transition-none ${snapshot.isDragging ? "rotate-1 cursor-grabbing border-line-hover" : ""}`}
           >
             <div className="flex items-center justify-between gap-2">
-              <span className="inline-flex items-center gap-1.5">
-                {faded ? <CheckCircleIcon /> : null}
-                <span className="font-mono text-[11px] font-medium tracking-[0.02em] text-ink-serial">
-                  {ticket.id}
-                </span>
+              <span className="font-mono text-[11px] font-medium tracking-[0.02em] text-ink-serial">
+                {ticket.id}
               </span>
               <span className="flex items-center gap-1.5">
                 {ticket.rush ? (
@@ -60,9 +50,7 @@ export function TicketCard({
                 </button>
               </span>
             </div>
-            <h3
-              className={`text-[13.5px] font-medium leading-[1.45] ${faded ? "text-ink-done" : "text-ink"}`}
-            >
+            <h3 className="text-[13.5px] font-medium leading-[1.45] text-ink">
               {ticket.title}
             </h3>
           </article>
