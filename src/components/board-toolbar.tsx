@@ -5,7 +5,7 @@ import { useBoardStore } from "@/store/board-store";
 
 export function BoardToolbar() {
   const count = useBoardStore((s) =>
-    s.columns.reduce((n, c) => n + s.ticketsByColumn[c.id].length, 0),
+    s.columns.reduce((n, c) => n + (s.ticketsByColumn[c.id]?.length ?? 0), 0),
   );
 
   return (

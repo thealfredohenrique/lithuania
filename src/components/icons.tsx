@@ -43,28 +43,12 @@ export function PlusIcon({ size = 12 }: { size?: number }) {
   );
 }
 
-export function KebabIcon() {
+export function ColumnsIcon() {
   return (
-    <svg width="14" height="4" viewBox="0 0 14 4" fill="none" aria-hidden="true">
-      <circle cx="2" cy="2" r="1.4" fill="#9AA0AB" />
-      <circle cx="7" cy="2" r="1.4" fill="#9AA0AB" />
-      <circle cx="12" cy="2" r="1.4" fill="#9AA0AB" />
-    </svg>
-  );
-}
-
-export function CheckCircleIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-      <circle cx="7" cy="7" r="6.3" fill="#30A46C" />
-      <path
-        d="M4.4 7.2l1.8 1.8 3.4-3.8"
-        stroke="#FFFFFF"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <rect x="1.5" y="2" width="4" height="14" rx="1.5" stroke="#9AA0AB" strokeWidth="1.4" />
+      <rect x="7" y="2" width="4" height="10" rx="1.5" stroke="#9AA0AB" strokeWidth="1.4" />
+      <rect x="12.5" y="2" width="4" height="7" rx="1.5" stroke="#9AA0AB" strokeWidth="1.4" />
     </svg>
   );
 }

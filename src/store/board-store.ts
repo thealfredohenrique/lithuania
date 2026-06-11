@@ -7,57 +7,72 @@ export type Ticket = {
   rush?: boolean;
 };
 
-export type ColumnId = "todo" | "doing" | "done";
-
 export type ColumnDef = {
-  id: ColumnId;
+  id: string; // crypto.randomUUID()
   title: string;
-  wipLimit?: number; // display-only WIP chip on the lane header (Doing)
-  faded?: boolean; // faded tickets (Done)
-};
-
-const INITIAL_COLUMNS: ColumnDef[] = [
-  { id: "todo", title: "To Do" },
-  { id: "doing", title: "Doing", wipLimit: 4 },
-  { id: "done", title: "Done", faded: true },
-];
-
-const INITIAL_TICKETS: Record<ColumnId, Ticket[]> = {
-  todo: [],
-  doing: [],
-  done: [],
 };
 
 const toSerial = (n: number) => `KB-${String(n).padStart(4, "0")}`;
 
 export type TicketLocation = {
-  columnId: ColumnId;
+  columnId: string;
   index: number;
 };
 
 type BoardState = {
   columns: ColumnDef[];
-  ticketsByColumn: Record<ColumnId, Ticket[]>;
+  ticketsByColumn: Record<string, Ticket[]>;
   nextSerial: number;
-  addTicket: (columnId: ColumnId, title: string) => void;
-  removeTicket: (columnId: ColumnId, ticketId: string) => void;
+  addColumn: (title: string) => void;
+  removeColumn: (columnId: string) => void;
+  addTicket: (columnId: string, title: string) => void;
+  removeTicket: (columnId: string, ticketId: string) => void;
   moveTicket: (from: TicketLocation, to: TicketLocation) => void;
+};
+
+type PersistedState = Pick<
+  BoardState,
+  "columns" | "ticketsByColumn" | "nextSerial"
+>;
+
+// Reset target for pre-v1 (hardcoded-lane) payloads and corrupt data alike.
+// Also the brand-new-user state: an empty board.
+const EMPTY_PERSISTED: PersistedState = {
+  columns: [],
+  ticketsByColumn: {},
+  nextSerial: 1,
 };
 
 export const useBoardStore = create<BoardState>()(
   persist(
     (set) => ({
-      columns: INITIAL_COLUMNS,
-      ticketsByColumn: INITIAL_TICKETS,
+      ...EMPTY_PERSISTED,
+      addColumn: (title) =>
+        set((s) => {
+          const id = crypto.randomUUID();
+          return {
+            columns: [...s.columns, { id, title }],
+            ticketsByColumn: { ...s.ticketsByColumn, [id]: [] },
+          };
+        }),
+      removeColumn: (columnId) =>
+        set((s) => {
+          // Cascade: the column's tickets entry goes with it.
+          const rest = { ...s.ticketsByColumn };
+          delete rest[columnId];
+          return {
+            columns: s.columns.filter((c) => c.id !== columnId),
+            ticketsByColumn: rest,
+          };
+        }),
       // Serials are never re-issued after deletes (job-ticket semantics).
-      nextSerial: 1,
       addTicket: (columnId, title) =>
         set((s) => ({
           nextSerial: s.nextSerial + 1,
           ticketsByColumn: {
             ...s.ticketsByColumn,
             [columnId]: [
-              ...s.ticketsByColumn[columnId],
+              ...(s.ticketsByColumn[columnId] ?? []),
               { id: toSerial(s.nextSerial), title },
             ],
           },
@@ -66,14 +81,17 @@ export const useBoardStore = create<BoardState>()(
         set((s) => ({
           ticketsByColumn: {
             ...s.ticketsByColumn,
-            [columnId]: s.ticketsByColumn[columnId].filter(
+            [columnId]: (s.ticketsByColumn[columnId] ?? []).filter(
               (ticket) => ticket.id !== ticketId,
             ),
           },
         })),
       moveTicket: (from, to) =>
         set((s) => {
-          const fromTickets = [...s.ticketsByColumn[from.columnId]];
+          const source = s.ticketsByColumn[from.columnId];
+          const target = s.ticketsByColumn[to.columnId];
+          if (!source || !target) return s; // unknown column — ignore
+          const fromTickets = [...source];
           const [moved] = fromTickets.splice(from.index, 1);
           if (!moved) return s; // stale index — ignore
           if (from.columnId === to.columnId) {
@@ -85,7 +103,7 @@ export const useBoardStore = create<BoardState>()(
               },
             };
           }
-          const toTickets = [...s.ticketsByColumn[to.columnId]];
+          const toTickets = [...target];
           toTickets.splice(to.index, 0, moved);
           return {
             ticketsByColumn: {
@@ -97,15 +115,33 @@ export const useBoardStore = create<BoardState>()(
         }),
     }),
     {
-      // Legacy key from the Shop Floor era — kept so existing boards survive
-      // the reskin.
+      // Legacy key from the Shop Floor era — kept so the v1 write-back
+      // overwrites stale data in place instead of orphaning it.
       name: "shop-floor-board",
-      // Lane defs (titles, wipLimit/faded flags) are presentation config —
-      // always sourced from code, never from a stale persisted copy.
+      version: 1,
+      // Columns are user data now, so they persist alongside the tickets.
       partialize: (s) => ({
+        columns: s.columns,
         ticketsByColumn: s.ticketsByColumn,
         nextSerial: s.nextSerial,
       }),
+      // Pre-v1 payloads hold the hardcoded todo/doing/done schema. No
+      // migration path by design: reset to an empty board.
+      migrate: () => EMPTY_PERSISTED,
+      // Same-version corruption guard (hand-edited storage): reset rather
+      // than crash on a malformed shape.
+      merge: (persisted, current) => {
+        const p = persisted as Partial<PersistedState> | null;
+        if (
+          !p ||
+          !Array.isArray(p.columns) ||
+          typeof p.ticketsByColumn !== "object" ||
+          p.ticketsByColumn === null
+        ) {
+          return { ...current, ...EMPTY_PERSISTED };
+        }
+        return { ...current, ...p };
+      },
       // SSR: hold the initial state through server render and React
       // hydration; Board rehydrates from localStorage in a post-mount effect.
       skipHydration: true,
