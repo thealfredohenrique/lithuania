@@ -1,5 +1,6 @@
 import { Draggable } from "@hello-pangea/dnd";
 
+import { CheckCircleIcon } from "@/components/icons";
 import { useBoardStore, type ColumnId, type Ticket } from "@/store/board-store";
 
 export function TicketCard({
@@ -22,22 +23,30 @@ export function TicketCard({
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className={`focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber ${snapshot.isDragging ? "drop-shadow-[0_8px_12px_rgba(0,0,0,0.5)]" : ""}`}
+          className={`focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${snapshot.isDragging ? "drop-shadow-drag" : ""}`}
         >
-          {/* Drag cues live on two elements: the drop-shadow filter must sit on
-              the li so it traces the article's notched clip-path instead of
-              being clipped by it, and the tilt must sit on the article so it
-              doesn't compose with the library's inline drag transform. */}
+          {/* Drag cues live on two elements: the library writes an inline
+              transform on the li while dragging, so our tilt must sit on the
+              article to avoid being clobbered; the drop-shadow stays on the
+              li with it. */}
           <article
-            className={`group ticket-notch border-b-2 border-paper-edge bg-paper px-3 py-2.5 text-ink transition-transform motion-reduce:transition-none ${faded ? "opacity-60" : ""} ${snapshot.isDragging ? "rotate-1" : ""}`}
+            className={`group flex cursor-grab flex-col gap-[7px] rounded-card border bg-surface px-3.5 py-3 transition-[border-color,box-shadow,opacity] motion-reduce:transition-none ${
+              faded
+                ? "border-line-done opacity-[0.72] shadow-card-done hover:border-line-hover hover:opacity-100"
+                : "border-line shadow-card hover:border-line-hover hover:shadow-card-hover"
+            } ${snapshot.isDragging ? "rotate-1 cursor-grabbing border-line-hover opacity-100" : ""}`}
           >
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="font-mono text-[11px] font-medium text-ink-muted">
-                #{ticket.id}
+            <div className="flex items-center justify-between gap-2">
+              <span className="inline-flex items-center gap-1.5">
+                {faded ? <CheckCircleIcon /> : null}
+                <span className="font-mono text-[11px] font-medium tracking-[0.02em] text-ink-serial">
+                  {ticket.id}
+                </span>
               </span>
-              <span className="flex items-baseline gap-1.5">
+              <span className="flex items-center gap-1.5">
                 {ticket.rush ? (
-                  <span className="-rotate-2 border border-signal px-1 font-mono text-[10px] font-medium uppercase tracking-widest text-signal">
+                  <span className="inline-flex items-center gap-[5px] rounded-full border border-rush-line bg-rush-soft px-2 py-0.5 text-[11px] font-semibold text-rush">
+                    <span aria-hidden="true" className="size-[5px] rounded-full bg-rush-dot" />
                     Rush
                   </span>
                 ) : null}
@@ -45,13 +54,17 @@ export function TicketCard({
                   type="button"
                   aria-label={`Delete ${ticket.title}`}
                   onClick={() => removeTicket(columnId, ticket.id)}
-                  className="px-1 font-mono text-sm leading-none text-ink-muted opacity-0 transition-opacity hover:text-signal focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-amber group-hover:opacity-100 motion-reduce:transition-none"
+                  className="rounded-[5px] px-1 text-sm leading-none text-ink-faint opacity-0 transition-opacity hover:text-rush focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent group-hover:opacity-100 motion-reduce:transition-none"
                 >
                   ×
                 </button>
               </span>
             </div>
-            <h3 className="mt-1.5 text-sm font-medium leading-snug">{ticket.title}</h3>
+            <h3
+              className={`text-[13.5px] font-medium leading-[1.45] ${faded ? "text-ink-done" : "text-ink"}`}
+            >
+              {ticket.title}
+            </h3>
           </article>
         </li>
       )}

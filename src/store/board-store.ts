@@ -12,13 +12,13 @@ export type ColumnId = "todo" | "doing" | "done";
 export type ColumnDef = {
   id: ColumnId;
   title: string;
-  hazard?: boolean; // amber hazard tape on lane sign (Doing)
+  wipLimit?: number; // display-only WIP chip on the lane header (Doing)
   faded?: boolean; // faded tickets (Done)
 };
 
 const INITIAL_COLUMNS: ColumnDef[] = [
   { id: "todo", title: "To Do" },
-  { id: "doing", title: "Doing", hazard: true },
+  { id: "doing", title: "Doing", wipLimit: 4 },
   { id: "done", title: "Done", faded: true },
 ];
 
@@ -97,8 +97,10 @@ export const useBoardStore = create<BoardState>()(
         }),
     }),
     {
+      // Legacy key from the Shop Floor era — kept so existing boards survive
+      // the reskin.
       name: "shop-floor-board",
-      // Lane defs (titles, hazard/faded flags) are presentation config —
+      // Lane defs (titles, wipLimit/faded flags) are presentation config —
       // always sourced from code, never from a stale persisted copy.
       partialize: (s) => ({
         ticketsByColumn: s.ticketsByColumn,

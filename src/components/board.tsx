@@ -34,7 +34,7 @@ export function Board() {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="scrollbar-steel flex h-full gap-4 overflow-x-auto p-4 md:p-6">
+      <div className="scrollbar-subtle flex min-h-0 flex-1 items-start gap-4 overflow-x-auto px-6 pt-4 pb-7">
         {columns.map((column) => (
           <Column key={column.id} {...column} />
         ))}
