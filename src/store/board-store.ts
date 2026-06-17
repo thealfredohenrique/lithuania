@@ -25,6 +25,7 @@ type BoardState = {
   nextSerial: number;
   addColumn: (title: string) => void;
   removeColumn: (columnId: string) => void;
+  updateColumnTitle: (id: string, newTitle: string) => void;
   addTicket: (columnId: string, title: string) => void;
   removeTicket: (columnId: string, ticketId: string) => void;
   moveTicket: (from: TicketLocation, to: TicketLocation) => void;
@@ -65,6 +66,12 @@ export const useBoardStore = create<BoardState>()(
             ticketsByColumn: rest,
           };
         }),
+      updateColumnTitle: (id, newTitle) =>
+        set((s) => ({
+          columns: s.columns.map((c) =>
+            c.id === id ? { ...c, title: newTitle } : c,
+          ),
+        })),
       // Serials are never re-issued after deletes (job-ticket semantics).
       addTicket: (columnId, title) =>
         set((s) => ({
