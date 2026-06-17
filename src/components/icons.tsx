@@ -43,6 +43,16 @@ export function PlusIcon({ size = 12 }: { size?: number }) {
   );
 }
 
+export function MoreIcon({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 15 15" fill="currentColor" aria-hidden="true">
+      <circle cx="7.5" cy="3.5" r="1.25" />
+      <circle cx="7.5" cy="7.5" r="1.25" />
+      <circle cx="7.5" cy="11.5" r="1.25" />
+    </svg>
+  );
+}
+
 export function ColumnsIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
