@@ -1,10 +1,23 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+export type LabelColor = "blue" | "green" | "amber" | "rose" | "violet" | "slate";
+
+export type Label = {
+  id: string; // crypto.randomUUID()
+  text: string;
+  color: LabelColor;
+};
+
 export type Ticket = {
   id: string; // doubles as the serial, e.g. "KB-0041"
   title: string;
   rush?: boolean;
+  // Enrichment fields are optional so tickets persisted before this feature
+  // (which lack them) deserialize cleanly and default at the call site.
+  description?: string;
+  labels?: Label[];
+  dueDate?: string | null; // ISO "yyyy-mm-dd" from <input type="date">, or null
 };
 
 export type ColumnDef = {
@@ -28,6 +41,11 @@ type BoardState = {
   updateColumnTitle: (id: string, newTitle: string) => void;
   addTicket: (columnId: string, title: string) => void;
   removeTicket: (columnId: string, ticketId: string) => void;
+  updateTicket: (
+    columnId: string,
+    ticketId: string,
+    patch: Partial<Pick<Ticket, "title" | "description" | "labels" | "dueDate">>,
+  ) => void;
   moveTicket: (from: TicketLocation, to: TicketLocation) => void;
 };
 
@@ -93,6 +111,21 @@ export const useBoardStore = create<BoardState>()(
             ),
           },
         })),
+      // Immutable field-level patch for a single ticket. Mirrors removeTicket's
+      // (columnId, ticketId) lookup; an unknown column is ignored.
+      updateTicket: (columnId, ticketId, patch) =>
+        set((s) => {
+          const column = s.ticketsByColumn[columnId];
+          if (!column) return s;
+          return {
+            ticketsByColumn: {
+              ...s.ticketsByColumn,
+              [columnId]: column.map((ticket) =>
+                ticket.id === ticketId ? { ...ticket, ...patch } : ticket,
+              ),
+            },
+          };
+        }),
       moveTicket: (from, to) =>
         set((s) => {
           const source = s.ticketsByColumn[from.columnId];
