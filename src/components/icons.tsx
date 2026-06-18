@@ -53,6 +53,27 @@ export function MoreIcon({ size = 15 }: { size?: number }) {
   );
 }
 
+export function DescriptionIcon({ size = 12 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <line x1="1.5" y1="2.5" x2="10.5" y2="2.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      <line x1="1.5" y1="5.5" x2="10.5" y2="5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      <line x1="1.5" y1="8.5" x2="7" y2="8.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function CalendarIcon({ size = 12 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <rect x="1.25" y="2.25" width="9.5" height="8.5" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+      <line x1="1.25" y1="4.75" x2="10.75" y2="4.75" stroke="currentColor" strokeWidth="1.2" />
+      <line x1="3.75" y1="1.25" x2="3.75" y2="3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+      <line x1="8.25" y1="1.25" x2="8.25" y2="3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function ColumnsIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
