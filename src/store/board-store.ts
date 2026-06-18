@@ -47,6 +47,7 @@ type BoardState = {
   addColumn: (title: string) => void;
   removeColumn: (columnId: string) => void;
   updateColumnTitle: (id: string, newTitle: string) => void;
+  reorderColumn: (startIndex: number, endIndex: number) => void;
   addTicket: (columnId: string, title: string) => void;
   removeTicket: (columnId: string, ticketId: string) => void;
   updateTicket: (
@@ -109,6 +110,16 @@ export const useBoardStore = create<BoardState>()(
             c.id === id ? { ...c, title: newTitle } : c,
           ),
         })),
+      // Immutable splice-reorder of the columns array; ticketsByColumn is keyed
+      // by id, so it rides along untouched. Guards a stale index like moveTicket.
+      reorderColumn: (startIndex, endIndex) =>
+        set((s) => {
+          const columns = [...s.columns];
+          const [moved] = columns.splice(startIndex, 1);
+          if (!moved) return s; // stale index — ignore
+          columns.splice(endIndex, 0, moved);
+          return { columns };
+        }),
       // Serials are never re-issued after deletes (job-ticket semantics).
       addTicket: (columnId, title) =>
         set((s) => ({
