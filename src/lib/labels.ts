@@ -57,3 +57,28 @@ export function isOverdue(iso: string): boolean {
   today.setHours(0, 0, 0, 0);
   return date.getTime() < today.getTime();
 }
+
+// "yyyy-mm-dd" -> "Overdue" / "Today" / "Tomorrow" / "In N days" relative to
+// local midnight. Empty string for missing/garbage input.
+export function formatRelativeDueDate(iso: string): string {
+  const date = parseLocalDate(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const days = Math.round((date.getTime() - today.getTime()) / 86_400_000);
+  if (days < 0) return "Overdue";
+  if (days === 0) return "Today";
+  if (days === 1) return "Tomorrow";
+  return `In ${days} days`;
+}
+
+// "Rasa K." -> "RK". Up to two leading letters from the first two words.
+export function getInitials(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0] ?? "")
+    .join("")
+    .toUpperCase();
+}

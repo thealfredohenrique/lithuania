@@ -9,6 +9,12 @@ export type Label = {
   color: LabelColor;
 };
 
+export type ChecklistItem = {
+  id: string; // crypto.randomUUID()
+  text: string;
+  done: boolean;
+};
+
 export type Ticket = {
   id: string; // doubles as the serial, e.g. "KB-0041"
   title: string;
@@ -18,6 +24,8 @@ export type Ticket = {
   description?: string;
   labels?: Label[];
   dueDate?: string | null; // ISO "yyyy-mm-dd" from <input type="date">, or null
+  assignee?: string; // free-text name; "" / undefined = unassigned
+  checklist?: ChecklistItem[];
 };
 
 export type ColumnDef = {
@@ -44,7 +52,18 @@ type BoardState = {
   updateTicket: (
     columnId: string,
     ticketId: string,
-    patch: Partial<Pick<Ticket, "title" | "description" | "labels" | "dueDate">>,
+    patch: Partial<
+      Pick<
+        Ticket,
+        | "title"
+        | "description"
+        | "labels"
+        | "dueDate"
+        | "rush"
+        | "assignee"
+        | "checklist"
+      >
+    >,
   ) => void;
   moveTicket: (from: TicketLocation, to: TicketLocation) => void;
 };

@@ -74,6 +74,34 @@ export function CalendarIcon({ size = 12 }: { size?: number }) {
   );
 }
 
+export function CheckIcon({ size = 12 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path
+        d="M2.5 7.4l2.8 2.8L11.5 4"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function UserIcon({ size = 13 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <circle cx="7" cy="4.5" r="2.6" stroke="currentColor" strokeWidth="1.3" />
+      <path
+        d="M2.4 12c0-2.4 2.1-3.6 4.6-3.6S11.6 9.6 11.6 12"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export function ColumnsIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
