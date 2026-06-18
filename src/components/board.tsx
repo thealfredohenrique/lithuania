@@ -1,6 +1,6 @@
 "use client";
 
-import { DragDropContext, type DropResult } from "@hello-pangea/dnd";
+import { DragDropContext, Droppable, type DropResult } from "@hello-pangea/dnd";
 import { useEffect } from "react";
 
 import { AddColumn } from "@/components/add-column";
@@ -11,6 +11,7 @@ import { useBoardStore } from "@/store/board-store";
 export function Board() {
   const columns = useBoardStore((s) => s.columns);
   const moveTicket = useBoardStore((s) => s.moveTicket);
+  const reorderColumn = useBoardStore((s) => s.reorderColumn);
 
   // Load persisted state after mount: SSR HTML and the hydration render both
   // show the initial state (skipHydration), so they always match; saved data
@@ -20,8 +21,15 @@ export function Board() {
     useBoardStore.persist?.rehydrate();
   }, []);
 
-  const onDragEnd = ({ source, destination }: DropResult) => {
+  const onDragEnd = ({ source, destination, type }: DropResult) => {
     if (!destination) return; // dropped outside any lane
+    // Column reorder: the board-level droppable carries this type, so the
+    // index pair is all we need.
+    if (type === "board-column") {
+      if (destination.index === source.index) return;
+      reorderColumn(source.index, destination.index);
+      return;
+    }
     if (
       destination.droppableId === source.droppableId &&
       destination.index === source.index
@@ -55,12 +63,28 @@ export function Board() {
           </div>
         </div>
       ) : (
-        <div className="scrollbar-subtle flex min-h-0 flex-1 items-start gap-4 overflow-x-auto px-6 pt-4 pb-7">
-          {columns.map((column) => (
-            <Column key={column.id} {...column} />
-          ))}
-          <AddColumn variant="rail" />
-        </div>
+        <Droppable
+          droppableId="board"
+          direction="horizontal"
+          type="board-column"
+        >
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              // space-x (margins), not gap: the dnd engine measures margin boxes
+              // when displacing siblings, so flex gap would leave the columns
+              // overlapping mid-drag (same reason the card list uses space-y).
+              className="scrollbar-subtle flex min-h-0 flex-1 items-start space-x-4 overflow-x-auto px-6 pt-4 pb-7"
+            >
+              {columns.map((column, index) => (
+                <Column key={column.id} index={index} {...column} />
+              ))}
+              {provided.placeholder}
+              <AddColumn variant="rail" />
+            </div>
+          )}
+        </Droppable>
       )}
     </DragDropContext>
   );
